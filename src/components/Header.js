@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {motion} from "framer-motion"
 import { FaShoppingBasket } from "react-icons/fa";
+import { MdAdd, MdLogout } from "react-icons/md";
 
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import {firebaseApp} from "../firebase.config"
@@ -13,16 +14,20 @@ const Header = () => {
     const auth = getAuth(firebaseApp);
     
     const [{user}, dispatch] = useStateValue();
+    const [isMenu, setIsMenu] = useState(false)
     const login = async () => {
-        
-        const {user: {refreshToken, providerData}} = await signInWithPopup(auth, provider)
-        dispatch({
-            type: actionType.SET_USER,
-            user: providerData[0]
-        })
-
-        //saving it to local storage
-        localStorage.setItem("user", JSON.stringify(providerData[0]));
+        if(!user) {
+            const {user: {providerData}} = await signInWithPopup(auth, provider)
+            dispatch({
+                type: actionType.SET_USER,
+                user: providerData[0]
+            })
+    
+            //saving it to local storage
+            localStorage.setItem("user", JSON.stringify(providerData[0]));
+        }else {
+            setIsMenu(!isMenu)
+        }
     }
   return (
     <div className='w-screen fixed z-50 p-6 px-16'>
@@ -49,12 +54,30 @@ const Header = () => {
 
                 <div className='relative'>
                     <motion.img 
-                        whileTap={{ scale: 0.6 }} 
+                        whileTap={{ scale: 0.8 }} 
                         src={user ? user.photoURL : "/img/avatar.png"}
                         className='w-10 min-w-[40px] drop-shadow-xl cursor-pointer rounded-full' 
                         alt="avatar" 
                         onClick={login}
                     />
+                    {
+                        isMenu && (
+                            <motion.div 
+                            initial={{ opacity: 0, scale: 0.6 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.6 }}
+                            className='w-40 bg-gray-50 shadow-xl rounded-lg absolute top-12 right-0 flex flex-col'>
+                                {user && user.email === "ankitrawat0102@gmail.com" && (
+                                    <Link to={'/createItem'}>
+                                        <p className= "px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-200 transition-all duration-100 ease-in-out text-textColor text-base"
+                                        >New Item <MdAdd />
+                                        </p >  
+                                    </Link>
+                                )}      
+                                <p className= "px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-slate-200 transition-all duration-100 ease-in-out text-textColor text-base">Logout <MdLogout /></p>
+                            </motion.div>
+                        )
+                    }
                 </div>
             </div>
         </div>
