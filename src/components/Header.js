@@ -5,15 +5,24 @@ import { FaShoppingBasket } from "react-icons/fa";
 
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import {firebaseApp} from "../firebase.config"
+import { useStateValue } from '../context/StateProvider';
+import { actionType } from '../context/reducer';
 
 const Header = () => {
     const provider = new GoogleAuthProvider();
     const auth = getAuth(firebaseApp);
     
-
+    const [{user}, dispatch] = useStateValue();
     const login = async () => {
-        const response = await signInWithPopup(auth, provider)
-        console.log(response)
+        
+        const {user: {refreshToken, providerData}} = await signInWithPopup(auth, provider)
+        dispatch({
+            type: actionType.SET_USER,
+            user: providerData[0]
+        })
+
+        //saving it to local storage
+        localStorage.setItem("user", JSON.stringify(providerData[0]));
     }
   return (
     <div className='w-screen fixed z-50 p-6 px-16'>
@@ -41,8 +50,8 @@ const Header = () => {
                 <div className='relative'>
                     <motion.img 
                         whileTap={{ scale: 0.6 }} 
-                        src="/img/avatar.png" 
-                        className='w-10 min-w-[40px] drop-shadow-xl cursor-pointer' 
+                        src={user ? user.photoURL : "/img/avatar.png"}
+                        className='w-10 min-w-[40px] drop-shadow-xl cursor-pointer rounded-full' 
                         alt="avatar" 
                         onClick={login}
                     />
