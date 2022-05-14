@@ -1,4 +1,4 @@
-import { getApp, getApps } from 'firebase/app'
+  import { getApp, getApps } from 'firebase/app'
 import { initializeApp } from "firebase/app";
 import {getFirestore} from 'firebase/firestore'
 import { getStorage } from "firebase/storage";
